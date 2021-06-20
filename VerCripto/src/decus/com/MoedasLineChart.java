@@ -24,14 +24,14 @@ public class MoedasLineChart {
     final NumberAxis yAxis = new NumberAxis();
     xAxis.setLabel("Dia");
     // creating the chart
-    final LineChart<String, Number> lineChart = new LineChart<String, Number>(xAxis, yAxis);
+    final LineChart<String, Number> lineChart = new LineChart<>(xAxis, yAxis);
 
     // defining a series
     XYChart.Series<String, Number> series = new XYChart.Series<>();
     series.setName(moedaPadrao);
     // populating the series with data
-    for (String chave : valores.keySet()) {
-      series.getData().add(new XYChart.Data<String, Number>(chave.substring(0, 5), valores.get(chave)));
+    for(Map.Entry<String, Double> entry : valores.entrySet()) {
+      series.getData().add(new XYChart.Data<>(entry.getKey().substring(0, 5), valores.get(entry.getKey())));
     }
     lineChart.getData().add(series);
 

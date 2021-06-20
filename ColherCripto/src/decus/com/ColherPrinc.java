@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,14 +31,12 @@ public class ColherPrinc {
       is = new URL(
           "https://pro-api.coinmarketcap.com/v1/cryptocurrency/listings/latest?limit=15&CMC_PRO_API_KEY=49a4bb16-ff0e-431d-bce7-ea8261826b8f")
               .openStream();
-      BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+      BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
       String jsonText = readAll(rd);
       JSONObject json = new JSONObject(jsonText);
       gravarDados(json);
       is.close();
     } catch (IOException e) {
-      System.out.println("Erro: " + e.getMessage());
-    } catch (JSONException e) {
       System.out.println("Erro: " + e.getMessage());
     }
   }
@@ -76,7 +74,6 @@ public class ColherPrinc {
   }
 
   private void gravarDados(JSONObject json) {
-    String chave = "";
     String nome = ""; 
     String sigla = "";
     String valor = "";
