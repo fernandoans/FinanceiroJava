@@ -5,9 +5,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.json.JSONObject;
+
+import redis.clients.jedis.Jedis;
 
 public class ColherPrinc {
   
@@ -19,7 +23,7 @@ public class ColherPrinc {
     InputStream is;
     try {
       is = new URL("https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL,BTC-BRL").openStream();
-      BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+      BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
       String jsonTxt = readAll(br);
       is.close();
       JSONObject json = new JSONObject(jsonTxt);
@@ -35,12 +39,39 @@ public class ColherPrinc {
     while ((cp = br.read()) != -1) {
       sb.append((char) cp);
     }
-    System.out.println(sb.toString());
     return sb.toString();
   }
   
   private void gravarDados(JSONObject json) {
-    // TODO Auto-generated method stub
+    // Campos a gravar
+    String chave = "";
+    String sigla = "";
+    String nome = "";
+    String alta = "";
+    String baixa = "";
+    String data = new SimpleDateFormat("dd/MM/yyyy").format(new Date());
+    
+    String [] valores = new String[] {"USDBRL", "EURBRL", "BTCBRL"};
+    JSONObject obj;
+    for (String val: valores) {
+      obj = json.getJSONObject(val);
+      sigla = obj.getString("code");
+      chave = sigla + data;
+      nome = obj.getString("name");
+      alta = obj.getString("high");
+      baixa = obj.getString("low");
+      colocarRedis(chave, data, sigla, nome, alta, baixa);
+    }
+  }
+
+  private void colocarRedis(String chave, String data, String sigla, String nome, String alta, String baixa) {
+    Jedis jedis = new Jedis();
+    jedis.hset(chave, "data", data);
+    jedis.hset(chave, "sigla", sigla);
+    jedis.hset(chave, "nome", nome);
+    jedis.hset(chave, "alta", alta);
+    jedis.hset(chave, "baixa", baixa);
+    jedis.close();
   }
 
 }
