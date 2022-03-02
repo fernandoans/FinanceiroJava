@@ -26,8 +26,10 @@ public class RedisDao {
     Map<String, Double> mapa = new TreeMap<>();
     Set<String> names = jedis.keys(moeda + "*");
     java.util.Iterator<String> it = names.iterator();
+    String s;
+    String d;
     while(it.hasNext()) {
-        String s = it.next();
+        s = it.next();
         double v = Double.parseDouble(jedis.hget(s, "valor"));
         if (v > maiorValor) {
           maiorValor = v;
@@ -37,10 +39,11 @@ public class RedisDao {
         }
         totValor += v;
         totCotacoes += 1;
-        
-        mapa.put(jedis.hget(s, "data"), new Double(v));
+        d = jedis.hget(s, "data");
+        d = d.substring(3,5) + "/" + d.substring(0,3);
+        mapa.put(d, v);
     }
-    mediaPeriodo = totValor / totCotacoes;
+    mediaPeriodo = totValor / ((totCotacoes == 0)?1:totCotacoes);
     return mapa;
   }
 
@@ -59,15 +62,6 @@ public class RedisDao {
       retorno[indice++] = moeda;
     }
     return retorno;
-  }
-  
-  // Pegar um dado determinado
-  public void getValorPorChave(String chave) {
-    Map<String, String> fields = jedis.hgetAll(chave);
-    for (String key : fields.keySet()) {
-      System.out.println(fields.get(key));
-    }
-    jedis.close();
   }
 
   // Para obter os Valores

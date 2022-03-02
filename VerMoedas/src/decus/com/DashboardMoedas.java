@@ -16,73 +16,82 @@ import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 
 public class DashboardMoedas extends JFrame {
-  private static final long serialVersionUID = 1L;
-  private RedisDao dao = new RedisDao();
+  
   private JComboBox<String> cbMoedas;
+  private RedisDAO dao = new RedisDAO();
   private String moedaPadrao;
   private JFXPanel fxPanel;
-  
+  // --
   private JLabel lbMaior = new JLabel("0.0");
   private JLabel lbMenor = new JLabel("0.0");
-  private JLabel lbTotal = new JLabel("0");
+  private JLabel lbTotal = new JLabel("0.0");
   private JLabel lbMedia = new JLabel("0.0");
   
   public DashboardMoedas() {
-    super("Cotação das CriptoMoedas");
-
+    super("Cotação de Moedas");
     JPanel pnEscolha = new JPanel(new FlowLayout(FlowLayout.LEFT));
     cbMoedas = new JComboBox<>(dao.getAllMoedas());
     moedaPadrao = String.valueOf(cbMoedas.getSelectedItem());
-    pnEscolha.add(new JLabel("CriptoMoedas disponíveis: "));
-    pnEscolha.add(cbMoedas);
     JButton btProcessar = new JButton("Processar");
-    
-    btProcessar.addActionListener(e -> pegarValor()); 
+    btProcessar.addActionListener(e -> pegarValor());
+
+    pnEscolha.add(new JLabel("Moedas Disponíveis: "));
+    pnEscolha.add(cbMoedas);
     pnEscolha.add(btProcessar);
-    this.add(pnEscolha, BorderLayout.NORTH);
-    
+
     JPanel pnRodape = new JPanel();
-    pnRodape.setLayout(new GridLayout(2,4));
-    pnRodape.add(new JLabel("Maior Valor"));
-    pnRodape.add(new JLabel("Menor Valor"));
-    pnRodape.add(new JLabel("Total Cotações"));
-    pnRodape.add(new JLabel("Valor Médio"));
-    pnRodape.add(lbMaior);
-    pnRodape.add(lbMenor);
-    pnRodape.add(lbTotal);
-    pnRodape.add(lbMedia);
-    this.add(pnRodape, BorderLayout.SOUTH);
-
+    pnRodape.setLayout(new GridLayout(2, 4));
+    pnRodape.add(new JLabel("Maior Valor")); // 1 - 1
+    pnRodape.add(new JLabel("Menor Valor")); // 1 - 2
+    pnRodape.add(new JLabel("Número de Cotações")); // 1 - 3
+    pnRodape.add(new JLabel("Valor Médio")); // 1 - 4
+    pnRodape.add(lbMaior); // 2 - 1
+    pnRodape.add(lbMenor); // 2 - 2
+    pnRodape.add(lbTotal); // 2 - 3
+    pnRodape.add(lbMedia); // 2 - 4
+    
     fxPanel = new JFXPanel();
-
-    this.setSize(1200, 400);
+    
+    this.add(pnEscolha, BorderLayout.NORTH);
     this.add(fxPanel);
+    this.add(pnRodape, BorderLayout.SOUTH);
+    
+    this.setSize(1200, 400);
     this.setVisible(true);
-
-    Platform.runLater(() -> iniciarFX(fxPanel)); 
+    
+    Platform.runLater(new Runnable() {
+      @Override
+      public void run() {
+        iniciarFX();
+      }
+    });
   }
   
   private void pegarValor() {
     moedaPadrao = String.valueOf(cbMoedas.getSelectedItem());
-    Platform.runLater(() -> iniciarFX(fxPanel)); 
+    Platform.runLater(new Runnable() {
+      @Override
+      public void run() {
+        iniciarFX();
+      }
+    });
     this.repaint();
   }
 
-  private void iniciarFX(JFXPanel fxPanel) {
+  private void iniciarFX() {
     final String moeda = moedaPadrao.substring(0, moedaPadrao.indexOf("-")-1);
-    final Map<String, Double> valores = dao.getDadosMoeda(moeda);
+    final Map<String, Double> valores = dao.getDadosMoeda(moeda, "alta");
     lbMaior.setText("" + dao.getMaiorValor());
     lbMenor.setText("" + dao.getMenorValor());
-    lbTotal.setText("" + dao.getTotCotacoes());
+    lbTotal.setText("" + dao.getNumCotacoes());
     lbMedia.setText("" + dao.getMediaPeriodo());
-
-    MoedasLineChart scatter = new MoedasLineChart(moedaPadrao, valores);
+    
+    MoedasLineChart scatter = new MoedasLineChart(moeda, valores);
     Scene cena = scatter.getScene();
     fxPanel.setScene(cena);
   }
-
-  public static void main(String [] args) {
+  
+  public static void main(String[] args) {
     new DashboardMoedas().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
   }
-
 }
